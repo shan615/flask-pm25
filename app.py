@@ -1,22 +1,54 @@
 from flask import Flask, render_template
 from datetime import datetime
 import pandas as pd
-import pymysql
-from pm25 import get_pm25_data_from_mysql, updata_db
+from pm25 import (
+     get_pm25_data_from_mysql, 
+     updata_db,
+     get_pm25_data_by_site,
+     get_all_counties,
+)
 import json
 
 app = Flask(__name__)
 
 
-@app.route("/filter")
-def filter_data():
+@app.route("/pm25-county-site")
+def pm25_county_site():
     county = request.args.get("county")
-    columns, datas = get_pm25_data_from_mysql()
-    df = pd.DataFrame(datas, columns=columns)
+    sites = get_site_by_county(county)
+    result = json.dumps(sites,ensure_ascii=False)
 
-    df1 = df.groupby("county").get_group(county).groupby("site")["pm25"].mean()
-    print(df1)
-    return {"county": county}
+    return result
+
+@app.route("/pm25-site")
+def pm25_site():
+    counties = get_all_counties()
+    return render_template("pm25_site.html",counties=counties)
+
+
+@app.route("/pm25-data-site")
+def pm_data_by_site():
+    county = request.args.get("county")
+    site = request.args.get("site")
+
+    if not county or not site:
+        result = json.dumps{"error":"縣市名跟站點名稱不正確"},ensure_ascii=False)
+        return result
+    else:
+        columns, datas = get_pm25_data_from_site(county,site)
+        df = pd,DataFrame(datas, columns=columns)
+        data = df["datacreationdata"].apply(lambda x: x.strftime("%Y-%m-%d %H"))
+    
+        data ={
+            "county": county,
+            "site": site,
+            "x_data": df["datacreationdata"].to_list(),
+            "y_data": df["pm25"].to_list(),
+        }
+
+        result = json.dumps(data, ensure_ascii=False)
+
+    return result
 
 
 @app.route("/updata-db")
