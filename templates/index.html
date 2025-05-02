@@ -4,15 +4,101 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
+
+    <link rel="stylesheet" href="{{ url_for('static,filename='style.css') }}">
     <style>
-        body{
-            text-align: center;
-            background-color: aquamarine;
-        }
+      #main{
+        text-align: center;
+        margin: 0 auto;
+      }
     </style>
+
+</head>
 <body>
-    <h1>{{name}}歡迎登入</h1>
-    <p>目前時間:{{now}}</p>
+    <h1>細懸浮微粒資料（PM2.5）</h1>
+    <h3>最新更新時間:{{data[0][4]}}</h3>
+
+    <div id="main"></div>
+
+
+    <a class="btn-updata" href="/up-data-db">更新資料庫</a>
+
+    <form action="/" method="GET">
+        <label for="county">選取縣市</label>
+        <!--縣市選擇框-->
+        <select name="" id="">
+            <option value="ALL">全部縣市</option>
+            {% for county in counties %}
+            <option value="{{county}}"{% if selected_county==county %}  selected {% enfif %}>{{county}}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">查詢</button>
+    </form>
+    <div id="chart-data" data=-labels='{{x_data | tojson }}'data-values='{{y_data | tojson }}'>
+    </div>
+
+    <h2 style="text-align: left;margin: 64px;">選擇縣市:{{selected_county}}</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                {% for col in columns[1:] %}
+                <th>{{col}}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in datas %}
+            <tr>
+                {% for data in datas %}
+                <td>{{data}}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    
+    
+    <script type="text/javascript">
+
+        const chartData = document.querySelector("#chart-data");
+        const labels = chartData.dataset.labels;
+        const values = chartData.dataset.values;
+
+        console.log(chartData,labels,values)
+
+        var myChart = echarts.init(document.getElementById('main'));
+        var option = {
+          title: {
+            text: 'PM2.5數據柱狀圖'
+          },
+          tooltip: {},
+          legend: {
+            data: ['PM25']
+          },
+          xAxis: {
+            data: labels
+          },
+          dataZoom:{
+            type:'slider',
+            start:0,
+            end:100
+          },
+          yAxis: {},
+          series: [
+            {
+              name: '销量',
+              type: 'bar',
+              data: values
+            }
+          ]
+        };
+  
+        myChart.setOption(option);
+    </script>
+    
+    
 </body>
 </html>
