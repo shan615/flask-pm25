@@ -42,7 +42,6 @@ def get_all_counties():
         if conn is not None:
             conn.close()
     
-    return counties
 
 def open_db():
     conn=None

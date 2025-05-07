@@ -38,12 +38,13 @@ def pm_data_by_site():
         columns, datas = get_pm25_data_from_site(county,site)
         df = pd,DataFrame(datas, columns=columns)
         data = df["datacreationdata"].apply(lambda x: x.strftime("%Y-%m-%d %H"))
-    
         data ={
             "county": county,
             "site": site,
-            "x_data": df["datacreationdata"].to_list(),
+            "x_data": data.to_list(),
             "y_data": df["pm25"].to_list(),
+            "higher":df["pm25"].max(),
+            "lower":df["pm25"].min(),
         }
 
         result = json.dumps(data, ensure_ascii=False)
